@@ -41,20 +41,22 @@ class SheetsService:
         return len(all_values) + 1
     
     def append_row(self, row_data: SpreadsheetRow):
-        """빈 행에 데이터 추가 (A, B, I~O열)"""
+        """빈 행에 필요한 열만 데이터 입력 (A, B, I, L, N, O열)"""
         try:
             # 첫 번째 빈 행 찾기
             target_row = self.find_first_empty_row()
             
-            # A~O열 전체 데이터 준비
-            values = row_data.to_list()
+            # 필요한 열의 데이터만 가져오기
+            column_data = row_data.get_column_data()
             
-            # A열부터 O열까지 범위 지정 (A=1, O=15)
-            range_name = f"A{target_row}:O{target_row}"
-            
-            self.worksheet.update(range_name, [values])
+            # 각 열별로 개별 업데이트
+            for column, value in column_data.items():
+                if value:  # 값이 있는 경우만 업데이트
+                    range_name = f"{column}{target_row}"
+                    self.worksheet.update(range_name, [[value]])
             
             print(f"데이터가 {target_row}행에 성공적으로 추가되었습니다.")
+            print(f"업데이트된 열: {', '.join(column_data.keys())}")
             
         except Exception as e:
             raise Exception(f"Google Sheets 업데이트 오류: {str(e)}")
