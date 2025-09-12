@@ -26,6 +26,19 @@ class SlackService:
             return messages[0].get('text', '')
         return ""
     
+    def get_message_author(self, channel_id: str, thread_ts: str) -> str:
+        """메시지 작성자 이름 가져오기"""
+        try:
+            messages = self.get_thread_messages(channel_id, thread_ts)
+            if messages:
+                user_id = messages[0].get('user')
+                if user_id:
+                    user_info = self.client.users_info(user=user_id)
+                    return user_info['user'].get('real_name', '홍길동')
+            return '홍길동'
+        except SlackApiError:
+            return '홍길동'
+    
     def send_error_notification(self, channel_id: str, error_message: str):
         """에러 알림 전송"""
         try:

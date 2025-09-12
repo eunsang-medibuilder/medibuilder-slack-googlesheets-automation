@@ -52,7 +52,13 @@ class TestWeeklyReportParser(unittest.TestCase):
     
     def test_parse_message(self):
         """메시지 파싱 테스트"""
-        result = self.parser.parse_message(self.sample_message)
+        result = self.parser.parse_message(self.sample_message, "테스트사용자")
+        
+        # 작성자 이름 확인
+        self.assertEqual(result['author_name'], '테스트사용자')
+        
+        # 금요일 날짜 확인 (2025-09-05)
+        self.assertEqual(result['friday_date'], '2025-09-05')
         
         # 년도/주차 확인
         self.assertEqual(result['year_week'], '2025 9월 1주차')
@@ -73,7 +79,7 @@ class TestWeeklyReportParser(unittest.TestCase):
         
         # O열 데이터 확인
         o_data = result['o_column_data']
-        self.assertTrue(o_data.startswith('- 2025 9월 1주차(이은상)'))
+        self.assertTrue(o_data.startswith('- 2025 9월 1주차(테스트사용자)'))
         self.assertIn(self.sample_message, o_data)
     
     def test_ratio_calculation_with_zero_total(self):

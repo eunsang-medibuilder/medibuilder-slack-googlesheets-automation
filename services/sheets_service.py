@@ -28,21 +28,33 @@ class SheetsService:
         self.spreadsheet = self.client.open_by_key(self.spreadsheet_id)
         self.worksheet = self.spreadsheet.worksheet(self.sheet_name)
     
+    def find_first_empty_row(self) -> int:
+        """첫 번째 빈 행 찾기"""
+        all_values = self.worksheet.get_all_values()
+        
+        for i, row in enumerate(all_values, 1):
+            # A열이 비어있으면 빈 행으로 판단
+            if not row or not row[0].strip():
+                return i
+        
+        # 모든 행이 차있으면 다음 행 반환
+        return len(all_values) + 1
+    
     def append_row(self, row_data: SpreadsheetRow):
-        """새 행 추가 (I~O열에 데이터 입력)"""
+        """빈 행에 데이터 추가 (A, B, I~O열)"""
         try:
-            # I열부터 O열까지 데이터 추가
+            # 첫 번째 빈 행 찾기
+            target_row = self.find_first_empty_row()
+            
+            # A~O열 전체 데이터 준비
             values = row_data.to_list()
             
-            # 다음 빈 행 찾기
-            next_row = len(self.worksheet.get_all_values()) + 1
-            
-            # I열부터 O열까지 범위 지정 (I=9, O=15)
-            range_name = f"I{next_row}:O{next_row}"
+            # A열부터 O열까지 범위 지정 (A=1, O=15)
+            range_name = f"A{target_row}:O{target_row}"
             
             self.worksheet.update(range_name, [values])
             
-            print(f"데이터가 {next_row}행에 성공적으로 추가되었습니다.")
+            print(f"데이터가 {target_row}행에 성공적으로 추가되었습니다.")
             
         except Exception as e:
             raise Exception(f"Google Sheets 업데이트 오류: {str(e)}")
