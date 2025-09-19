@@ -72,24 +72,29 @@ class SheetsService:
         title = f"-{year} {month}월 {week_number}주차({user_name})"
         return f"{title}\n{cleaned_message}"
     
-    def append_row(self, data: dict):
+    def append_row(self, data):
         """빈 행에 필요한 열만 데이터 입력 (A, B, I, L, N, O열)"""
         try:
             # 첫 번째 빈 행 찾기
             target_row = self.find_first_empty_row()
             
-            # 필요한 열의 데이터만 준비
-            column_data = {
-                'A': data["slack_user_name"],                    # A열: 사용자명
-                'B': self._get_friday_of_week(),                 # B열: 해당 주 금요일
-                'I': data["onleaf_simple_ratio"],                # I열: 온리프/심플 비율
-                'L': data["leshine_ratio"],                      # L열: 르샤인 비율
-                'N': data["oblible_ratio"],                      # N열: 오블리브 비율
-                'O': self._format_message_content(               # O열: 제목 + 원본 메시지
-                    data["slack_user_name"], 
-                    data["slack_message_content"]
-                )
-            }
+            # SpreadsheetRow 객체인지 dict인지 확인하여 처리
+            if isinstance(data, SpreadsheetRow):
+                # SpreadsheetRow 객체인 경우
+                column_data = data.get_column_data()
+            else:
+                # dict인 경우 (기존 방식 호환)
+                column_data = {
+                    'A': data["slack_user_name"],                    # A열: 사용자명
+                    'B': self._get_friday_of_week(),                 # B열: 해당 주 금요일
+                    'I': data["onleaf_simple_ratio"],                # I열: 온리프/심플 비율
+                    'L': data["leshine_ratio"],                      # L열: 르샤인 비율
+                    'N': data["oblible_ratio"],                      # N열: 오블리브 비율
+                    'O': self._format_message_content(               # O열: 제목 + 원본 메시지
+                        data["slack_user_name"], 
+                        data["slack_message_content"]
+                    )
+                }
             
             # 각 열별로 개별 업데이트
             for column, value in column_data.items():

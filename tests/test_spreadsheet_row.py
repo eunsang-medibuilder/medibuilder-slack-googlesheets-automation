@@ -9,9 +9,9 @@ class TestSpreadsheetRow(unittest.TestCase):
         row = SpreadsheetRow(
             author_name="테스트사용자",
             friday_date="2025-09-05",
-            onlief_simple_ratio="1.92%",
-            leshaen_ratio="4.81%",
-            oblive_ratio="93.27%",
+            onleaf_simple_ratio="1.92%",
+            leshine_ratio="4.81%",
+            oblible_ratio="93.27%",
             full_message="- 2025 9월 1주차(테스트사용자)\n테스트 메시지"
         )
         
@@ -30,9 +30,9 @@ class TestSpreadsheetRow(unittest.TestCase):
             'author_name': '홍길동',
             'friday_date': '2025-09-12',
             'ratios': {
-                'onlief_simple_ratio': '10.00%',
-                'leshaen_ratio': '20.00%',
-                'oblive_ratio': '70.00%'
+                'onleaf_simple_ratio': '10.00%',
+                'leshine_ratio': '20.00%',
+                'oblible_ratio': '70.00%'
             },
             'o_column_data': '- 2025 9월 2주차(홍길동)\n테스트'
         }
@@ -41,21 +41,38 @@ class TestSpreadsheetRow(unittest.TestCase):
         
         self.assertEqual(row.author_name, '홍길동')
         self.assertEqual(row.friday_date, '2025-09-12')
-        self.assertEqual(row.onlief_simple_ratio, '10.00%')
-        self.assertEqual(row.leshaen_ratio, '20.00%')
-        self.assertEqual(row.oblive_ratio, '70.00%')
+        self.assertEqual(row.onleaf_simple_ratio, '10.00%')
+        self.assertEqual(row.leshine_ratio, '20.00%')
+        self.assertEqual(row.oblible_ratio, '70.00%')
         self.assertEqual(row.full_message, '- 2025 9월 2주차(홍길동)\n테스트')
     
     def test_default_values(self):
-        """기본값 테스트"""
+        """기본값 테스트 (자동 날짜 설정 고려)"""
         row = SpreadsheetRow()
         
         self.assertEqual(row.author_name, "홍길동")
-        self.assertEqual(row.friday_date, "")
-        self.assertEqual(row.onlief_simple_ratio, "00.00%")
-        self.assertEqual(row.leshaen_ratio, "00.00%")
-        self.assertEqual(row.oblive_ratio, "00.00%")
+        # friday_date는 자동으로 설정되므로 빈 문자열이 아님
+        self.assertNotEqual(row.friday_date, "")
+        self.assertTrue(row.friday_date.startswith("2025-"))
+        self.assertEqual(row.onleaf_simple_ratio, "00.00%")
+        self.assertEqual(row.leshine_ratio, "00.00%")
+        self.assertEqual(row.oblible_ratio, "00.00%")
         self.assertEqual(row.full_message, "")
+    
+    def test_auto_formatting(self):
+        """자동 포맷팅 테스트"""
+        row = SpreadsheetRow(
+            author_name="김철수",
+            full_message="이름:김철수 온리프 2시간 르샤인 5시간"
+        )
+        
+        # 자동으로 날짜가 설정되어야 함
+        self.assertNotEqual(row.friday_date, "")
+        
+        # 메시지가 자동으로 포맷팅되어야 함
+        self.assertTrue(row.full_message.startswith("-2025"))
+        self.assertIn("김철수", row.full_message)
+        self.assertNotIn("이름:김철수", row.full_message)  # 이름 패턴 제거 확인
 
 if __name__ == '__main__':
     unittest.main()
