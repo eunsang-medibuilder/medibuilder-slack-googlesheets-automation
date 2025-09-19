@@ -12,19 +12,19 @@ class SpreadsheetRow:
     friday_date: str = ""                   # B열: 해당 주 금요일 날짜 (YYYY-MM-DD)
     
     # I, L, N, O열: 비율 및 메시지 데이터  
-    onleaf_simple_ratio: str = "00.00%"     # I열: 온리프+심플치과 비율 (오타 수정)
-    leshine_ratio: str = "00.00%"           # L열: 르샤인 비율 (오타 수정)
-    oblible_ratio: str = "00.00%"           # N열: 오블리브 비율 (오타 수정)
-    full_message: str = ""                  # O열: 년도+주차(이름) + 전체 메시지
+    onleaf_simple_ratio: str = "00.00%"     # I열: 온리프+심플치과 비율
+    leshine_ratio: str = "00.00%"           # L열: 르샤인 비율
+    oblive_ratio: str = "00.00%"            # N열: 오블리브 비율
+    memo: str = ""                          # O열: 년도+주차(이름) + 전체 메시지
     
     def __post_init__(self):
         """초기화 후 자동으로 날짜와 메시지 포맷팅"""
         if not self.friday_date:
             self.friday_date = self._get_friday_of_week()
         
-        if self.full_message and not self.full_message.startswith('-'):
+        if self.memo and not self.memo.startswith('-'):
             # 원본 메시지가 있고 아직 포맷팅되지 않은 경우
-            self.full_message = self._format_message_content(self.author_name, self.full_message)
+            self.memo = self._format_message_content(self.author_name, self.memo)
     
     def _get_friday_of_week(self) -> str:
         """해당 주의 금요일 날짜를 YYYY-MM-DD 형식으로 반환"""
@@ -63,20 +63,20 @@ class SpreadsheetRow:
             'B': self.friday_date,
             'I': self.onleaf_simple_ratio,
             'L': self.leshine_ratio,
-            'N': self.oblible_ratio,
-            'O': self.full_message
+            'N': self.oblive_ratio,
+            'O': self.memo
         }
     
     @classmethod
-    def from_parsed_data(cls, parsed_data: dict) -> 'SpreadsheetRow':
+    def from_parsed_data(cls, parsed_data: dict, author_name: str = None) -> 'SpreadsheetRow':
         """파싱된 데이터로부터 SpreadsheetRow 생성"""
         ratios = parsed_data.get('ratios', {})
         
         return cls(
-            author_name=parsed_data.get('author_name', '홍길동'),
+            author_name=author_name or parsed_data.get('author_name', '홍길동'),
             friday_date=parsed_data.get('friday_date', ''),
-            onleaf_simple_ratio=ratios.get('onleaf_simple_ratio', '00.00%'),
-            leshine_ratio=ratios.get('leshine_ratio', '00.00%'),
-            oblible_ratio=ratios.get('oblible_ratio', '00.00%'),
-            full_message=parsed_data.get('o_column_data', '')
+            onleaf_simple_ratio=ratios.get('onlief_simple_ratio', '00.00%'),  # 파서의 실제 키명
+            leshine_ratio=ratios.get('leshaen_ratio', '00.00%'),              # 파서의 실제 키명
+            oblive_ratio=ratios.get('oblive_ratio', '00.00%'),
+            memo=parsed_data.get('o_column_data', '')
         )

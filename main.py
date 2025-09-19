@@ -36,6 +36,8 @@ def main():
         parser = WeeklyReportParser()
         
         print("Slack 메시지를 가져오는 중...")
+        print(f"채널 ID: {args.channel_id}")
+        print(f"스레드 TS: {args.thread_ts}")
         
         # Slack 메시지 가져오기
         message_content = slack_service.get_message_content(
@@ -85,8 +87,8 @@ def main():
         try:
             slack_service = SlackService(Config.SLACK_BOT_TOKEN)
             slack_service.send_error_notification(args.channel_id, str(e))
-        except:
-            pass
+        except Exception as slack_error:
+            print(f"Slack 알림 전송 실패: {slack_error}")
         
         sys.exit(1)
 

@@ -11,13 +11,35 @@ class SlackService:
     def get_thread_messages(self, channel_id: str, thread_ts: str) -> List[Dict]:
         """스레드의 모든 메시지 가져오기"""
         try:
+            # 먼저 단일 메시지 조회 시도
+            try:
+                response = self.client.conversations_history(
+                    channel=channel_id,
+                    latest=thread_ts,
+                    limit=1,
+                    inclusive=True
+                )
+                if response['messages']:
+                    return response['messages']
+            except SlackApiError:
+                pass
+            
+            # 스레드 메시지 조회 시도
             response = self.client.conversations_replies(
                 channel=channel_id,
                 ts=thread_ts
             )
             return response['messages']
         except SlackApiError as e:
-            raise Exception(f"Slack API 오류: {e.response['error']}")
+            error_code = e.response.get('error', 'unknown')
+            if error_code == 'thread_not_found':
+                raise Exception(f"스레드를 찾을 수 없습니다. thread_ts가 올바른지 확인하세요: {thread_ts}")
+            elif error_code == 'channel_not_found':
+                raise Exception(f"채널을 찾을 수 없습니다. channel_id가 올바른지 확인하세요: {channel_id}")
+            elif error_code == 'not_in_channel':
+                raise Exception(f"봇이 채널에 참여하지 않았습니다. 채널에 봇을 초대하세요: {channel_id}")
+            else:
+                raise Exception(f"Slack API 오류 ({error_code}): {e.response.get('error', str(e))}")
     
     def get_message_content(self, channel_id: str, thread_ts: str) -> str:
         """스레드의 첫 번째 메시지 내용 가져오기"""
